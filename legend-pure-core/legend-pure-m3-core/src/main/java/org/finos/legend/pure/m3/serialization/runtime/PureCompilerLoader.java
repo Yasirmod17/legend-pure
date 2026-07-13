@@ -35,6 +35,7 @@ import org.finos.legend.pure.m3.serialization.compiler.element.ElementLoader.Bac
 import org.finos.legend.pure.m3.serialization.compiler.file.FileDeserializer;
 import org.finos.legend.pure.m3.serialization.compiler.file.FilePathProvider;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.MetadataIndex;
+import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleBackReferenceIndex;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleFunctionNameMetadata;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleManifest;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleMetadataSerializer;
@@ -296,9 +297,17 @@ public abstract class PureCompilerLoader
         {
             long metadataStart = System.nanoTime();
             LOGGER.debug("Loading metadata index");
-            MetadataIndex metadataIndex = MetadataIndex.builder()
-                    .withModules(LazyIterate.collect(repositories, this::loadModuleManifest))
-                    .build();
+            MetadataIndex.Builder metadataIndexBuilder = MetadataIndex.builder();
+            repositories.forEach(repo ->
+            {
+                metadataIndexBuilder.withModule(loadModuleManifest(repo));
+                ModuleBackReferenceIndex brIndex = loadModuleBackReferenceIndex(repo);
+                if (brIndex != null)
+                {
+                    metadataIndexBuilder.withBackReferenceIndex(brIndex);
+                }
+            });
+            MetadataIndex metadataIndex = metadataIndexBuilder.build();
             long metadataEnd = System.nanoTime();
             LOGGER.debug("Finished loading metadata index in {}ns", metadataEnd - metadataStart);
 
@@ -351,10 +360,18 @@ public abstract class PureCompilerLoader
             long srcRegEnd = System.nanoTime();
             LOGGER.debug("Finished initializing the source registry in {}ns", srcRegEnd - srcRegStart);
 
+            // register instances by classifier
+            long instancesByClassifierStart = System.nanoTime();
+            LOGGER.debug("Registering instances by classifier");
+            Context context = runtime.getContext();
+            metadataIndex.forEachElement(e -> context.registerInstanceByClassifier(elementLoader.loadElementStrict(e.getPath())));
+            metadataIndex.forEachVirtualPackage(p -> context.registerInstanceByClassifier(elementLoader.loadElementStrict(p.getPath())));
+            long instancesByClassifierEnd = System.nanoTime();
+            LOGGER.debug("Finished registering instances by classifier in {}ns", instancesByClassifierEnd - instancesByClassifierStart);
+
             // load functions by name
             long fnsByNameStart = System.nanoTime();
             LOGGER.debug("Loading functions by name");
-            Context context = runtime.getContext();
             repositories.forEach(repo -> loadModuleFunctionsByName(repo).getFunctionsByName().forEach(fbn ->
             {
                 String funcName = fbn.getFunctionName();
@@ -414,6 +431,14 @@ public abstract class PureCompilerLoader
 
     abstract ModuleFunctionNameMetadata loadModuleFunctionsByName(String repository);
 
+    /**
+     * Load the back-reference element index for a module. Returns null if not available (graceful fallback).
+     *
+     * @param repository repository name
+     * @return back-reference index, or null if not available
+     */
+    abstract ModuleBackReferenceIndex loadModuleBackReferenceIndex(String repository);
+
     public static PureCompilerLoader newLoader(ClassLoader classLoader, BiFunction<? super ClassLoader, ? super ModelRepository, ? extends ElementBuilder> elementBuilderFactory)
     {
         return new ClassLoaderPureCompilerLoader(classLoader, elementBuilderFactory);
@@ -464,6 +489,12 @@ public abstract class PureCompilerLoader
         {
             return this.fileDeserializer.deserializeModuleFunctionNameMetadata(this.classLoader, repository);
         }
+
+        @Override
+        ModuleBackReferenceIndex loadModuleBackReferenceIndex(String repository)
+        {
+            return this.fileDeserializer.deserializeModuleBackReferenceIndexIfPresent(this.classLoader, repository);
+        }
     }
 
     private static class DirectoryPureCompilerLoader extends PureCompilerLoader
@@ -498,6 +529,12 @@ public abstract class PureCompilerLoader
         ModuleFunctionNameMetadata loadModuleFunctionsByName(String repository)
         {
             return this.fileDeserializer.deserializeModuleFunctionNameMetadata(this.directory, repository);
+        }
+
+        @Override
+        ModuleBackReferenceIndex loadModuleBackReferenceIndex(String repository)
+        {
+            return this.fileDeserializer.deserializeModuleBackReferenceIndexIfPresent(this.directory, repository);
         }
     }
 }

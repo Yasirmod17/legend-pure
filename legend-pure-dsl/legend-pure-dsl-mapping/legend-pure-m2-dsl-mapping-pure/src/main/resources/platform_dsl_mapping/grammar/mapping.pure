@@ -18,6 +18,7 @@ import meta::pure::store::*;
 import meta::pure::tools::*;
 import meta::pure::functions::collection::*;
 import meta::pure::mapping::aggregationAware::*;
+import meta::pure::mapping::relation::*;
 import meta::pure::metamodel::testable::*;
 import meta::pure::metamodel::relation::*;
 
@@ -179,6 +180,17 @@ Class meta::pure::mapping::xStore::XStorePropertyMapping extends PropertyMapping
     crossExpression : LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>[1];
 }
 
+// ModelJoin
+
+Class meta::pure::mapping::modelJoin::ModelJoinAssociationImplementation extends AssociationImplementation
+{
+}
+
+Class meta::pure::mapping::modelJoin::ModelJoinPropertyMapping extends PropertyMapping
+{
+    joinCondition : LambdaFunction<{Nil[1],Nil[1]->Boolean[1]}>[1];
+}
+
 // Aggregation Aware
 
 Class meta::pure::mapping::aggregationAware::AggregationAwareSetImplementation extends InstanceSetImplementation
@@ -224,10 +236,15 @@ Class meta::pure::mapping::aggregationAware::AggregateSpecificationValueSpecific
 Class meta::pure::mapping::relation::RelationFunctionInstanceSetImplementation extends InstanceSetImplementation
 {
   relationFunction: FunctionDefinition<{->Relation<Any>[1]}>[1];
+  primaryKey: meta::pure::metamodel::relation::Column<Nil,Any|*>[*];
 }
 
 Class meta::pure::mapping::relation::RelationFunctionPropertyMapping extends PropertyMapping
 {
   column: meta::pure::metamodel::relation::Column<Nil,Any|*>[1];
   transformer: ValueTransformer<Any>[0..1];
+}
+
+Class meta::pure::mapping::relation::EmbeddedRelationFunctionSetImplementation extends RelationFunctionInstanceSetImplementation, EmbeddedSetImplementation
+{
 }

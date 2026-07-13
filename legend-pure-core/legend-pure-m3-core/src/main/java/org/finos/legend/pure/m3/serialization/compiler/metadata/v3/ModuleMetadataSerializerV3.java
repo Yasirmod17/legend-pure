@@ -15,6 +15,7 @@
 package org.finos.legend.pure.m3.serialization.compiler.metadata.v3;
 
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ElementBackReferenceMetadata;
+import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleBackReferenceIndex;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleExternalReferenceMetadata;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleFunctionNameMetadata;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleManifest;
@@ -22,14 +23,13 @@ import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleMetadataSe
 import org.finos.legend.pure.m3.serialization.compiler.metadata.ModuleSourceMetadata;
 import org.finos.legend.pure.m3.serialization.compiler.metadata.v2.ModuleMetadataSerializerV2;
 import org.finos.legend.pure.m3.serialization.compiler.strings.StringIndexer;
+import org.finos.legend.pure.m3.tools.CompressorPool;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UncheckedIOException;
-import java.util.zip.Deflater;
 import java.util.zip.DeflaterOutputStream;
-import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
 public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExtension
@@ -47,8 +47,7 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
     @Override
     public void serializeManifest(OutputStream stream, ModuleManifest manifest, StringIndexer stringIndexer)
     {
-        Deflater deflater = newDeflater();
-        try
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
             DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
             this.v2.serializeManifest(zipStream, manifest, stringIndexer);
@@ -58,31 +57,21 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
         {
             throw new UncheckedIOException(e);
         }
-        finally
-        {
-            deflater.end();
-        }
     }
 
     @Override
     public ModuleManifest deserializeManifest(InputStream stream, StringIndexer stringIndexer)
     {
-        Inflater inflater = newInflater();
-        try
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
         {
             return this.v2.deserializeManifest(new InflaterInputStream(stream, inflater), stringIndexer);
-        }
-        finally
-        {
-            inflater.end();
         }
     }
 
     @Override
     public void serializeSourceMetadata(OutputStream stream, ModuleSourceMetadata sourceMetadata, StringIndexer stringIndexer)
     {
-        Deflater deflater = newDeflater();
-        try
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
             DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
             this.v2.serializeSourceMetadata(zipStream, sourceMetadata, stringIndexer);
@@ -92,31 +81,21 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
         {
             throw new UncheckedIOException(e);
         }
-        finally
-        {
-            deflater.end();
-        }
     }
 
     @Override
     public ModuleSourceMetadata deserializeSourceMetadata(InputStream stream, StringIndexer stringIndexer)
     {
-        Inflater inflater = newInflater();
-        try
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
         {
             return this.v2.deserializeSourceMetadata(new InflaterInputStream(stream, inflater), stringIndexer);
-        }
-        finally
-        {
-            inflater.end();
         }
     }
 
     @Override
     public void serializeExternalReferenceMetadata(OutputStream stream, ModuleExternalReferenceMetadata externalReferenceMetadata, StringIndexer stringIndexer)
     {
-        Deflater deflater = newDeflater();
-        try
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
             DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
             this.v2.serializeExternalReferenceMetadata(zipStream, externalReferenceMetadata, stringIndexer);
@@ -126,31 +105,21 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
         {
             throw new UncheckedIOException(e);
         }
-        finally
-        {
-            deflater.end();
-        }
     }
 
     @Override
     public ModuleExternalReferenceMetadata deserializeExternalReferenceMetadata(InputStream stream, StringIndexer stringIndexer)
     {
-        Inflater inflater = newInflater();
-        try
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
         {
             return this.v2.deserializeExternalReferenceMetadata(new InflaterInputStream(stream, inflater), stringIndexer);
-        }
-        finally
-        {
-            inflater.end();
         }
     }
 
     @Override
     public void serializeBackReferenceMetadata(OutputStream stream, ElementBackReferenceMetadata backReferenceMetadata, StringIndexer stringIndexer)
     {
-        Deflater deflater = newDeflater();
-        try
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
             DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
             this.v2.serializeBackReferenceMetadata(zipStream, backReferenceMetadata, stringIndexer);
@@ -160,31 +129,21 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
         {
             throw new UncheckedIOException(e);
         }
-        finally
-        {
-            deflater.end();
-        }
     }
 
     @Override
     public ElementBackReferenceMetadata deserializeBackReferenceMetadata(InputStream stream, StringIndexer stringIndexer)
     {
-        Inflater inflater = newInflater();
-        try
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
         {
             return this.v2.deserializeBackReferenceMetadata(new InflaterInputStream(stream, inflater), stringIndexer);
-        }
-        finally
-        {
-            inflater.end();
         }
     }
 
     @Override
     public void serializeFunctionNameMetadata(OutputStream stream, ModuleFunctionNameMetadata functionNameMetadata, StringIndexer stringIndexer)
     {
-        Deflater deflater = newDeflater();
-        try
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
             DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
             this.v2.serializeFunctionNameMetadata(zipStream, functionNameMetadata, stringIndexer);
@@ -194,33 +153,38 @@ public class ModuleMetadataSerializerV3 implements ModuleMetadataSerializerExten
         {
             throw new UncheckedIOException(e);
         }
-        finally
-        {
-            deflater.end();
-        }
     }
 
     @Override
     public ModuleFunctionNameMetadata deserializeFunctionNameMetadata(InputStream stream, StringIndexer stringIndexer)
     {
-        Inflater inflater = newInflater();
-        try
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
         {
             return this.v2.deserializeFunctionNameMetadata(new InflaterInputStream(stream, inflater), stringIndexer);
         }
-        finally
+    }
+
+    @Override
+    public void serializeBackReferenceIndex(OutputStream stream, ModuleBackReferenceIndex backReferenceIndex, StringIndexer stringIndexer)
+    {
+        try (CompressorPool.CloseableDeflater deflater = CompressorPool.getInstance().borrowDeflater(COMPRESSION_LEVEL, true))
         {
-            inflater.end();
+            DeflaterOutputStream zipStream = new DeflaterOutputStream(stream, deflater);
+            this.v2.serializeBackReferenceIndex(zipStream, backReferenceIndex, stringIndexer);
+            zipStream.finish();
+        }
+        catch (IOException e)
+        {
+            throw new UncheckedIOException(e);
         }
     }
 
-    private Deflater newDeflater()
+    @Override
+    public ModuleBackReferenceIndex deserializeBackReferenceIndex(InputStream stream, StringIndexer stringIndexer)
     {
-        return new Deflater(COMPRESSION_LEVEL, true);
-    }
-
-    private Inflater newInflater()
-    {
-        return new Inflater(true);
+        try (CompressorPool.CloseableInflater inflater = CompressorPool.getInstance().borrowInflater(true))
+        {
+            return this.v2.deserializeBackReferenceIndex(new InflaterInputStream(stream, inflater), stringIndexer);
+        }
     }
 }

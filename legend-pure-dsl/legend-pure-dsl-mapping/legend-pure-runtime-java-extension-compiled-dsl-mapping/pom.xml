@@ -22,7 +22,7 @@
     <parent>
         <groupId>org.finos.legend.pure</groupId>
         <artifactId>legend-pure-dsl-mapping</artifactId>
-        <version>5.79.1-SNAPSHOT</version>
+        <version>5.88.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>legend-pure-runtime-java-extension-compiled-dsl-mapping</artifactId>
@@ -80,7 +80,8 @@
                                     org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.OperationParser,
                                     org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.EnumerationMappingParser,
                                     org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.AggregationAwareParser,
-                                    org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.XStoreParser
+                                    org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.XStoreParser,
+                                    org.finos.legend.pure.m2.dsl.mapping.serialization.grammar.v1.ModelJoinParser
                                 </argument>
                                 <argument>${project.build.directory}/generated-sources/</argument>
                             </arguments>

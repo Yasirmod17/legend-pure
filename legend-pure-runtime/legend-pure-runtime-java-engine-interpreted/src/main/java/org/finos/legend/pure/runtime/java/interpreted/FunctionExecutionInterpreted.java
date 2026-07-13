@@ -14,6 +14,7 @@
 
 package org.finos.legend.pure.runtime.java.interpreted;
 
+import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.factory.Lists;
 import org.eclipse.collections.api.factory.Maps;
 import org.eclipse.collections.api.factory.Stacks;
@@ -22,11 +23,13 @@ import org.eclipse.collections.api.list.MutableList;
 import org.eclipse.collections.api.map.MutableMap;
 import org.eclipse.collections.api.stack.MutableStack;
 import org.eclipse.collections.impl.list.Interval;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.constraint.Constraint;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.FunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunction;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.LambdaFunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.NativeFunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunction;
+import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.PackageableFunctionCoreInstanceWrapper;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.Property;
 import org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.property.PropertyCoreInstanceWrapper;
 import org.finos.legend.pure.m3.exception.PureAssertFailException;
@@ -36,7 +39,6 @@ import org.finos.legend.pure.m3.execution.ExecutionPlatform;
 import org.finos.legend.pure.m3.execution.FunctionExecution;
 import org.finos.legend.pure.m3.execution.OutputWriter;
 import org.finos.legend.pure.m3.navigation.Instance;
-import org.finos.legend.pure.m3.navigation.M3Paths;
 import org.finos.legend.pure.m3.navigation.M3ProcessorSupport;
 import org.finos.legend.pure.m3.navigation.M3Properties;
 import org.finos.legend.pure.m3.navigation.PackageableElement.PackageableElement;
@@ -171,6 +173,7 @@ import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string._boolean.EndsWith;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string._boolean.StartsWith;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.index.IndexOfString;
+import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.index.LastIndexOf;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.index.Length;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.operation.Replace;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.operation.ReverseString;
@@ -191,6 +194,9 @@ import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.string.trim.Trim;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.tests.Assert;
 import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.tests.AssertError;
+import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.tests.ExecuteTest;
+import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.tests.ExecutePCTTest;
+import org.finos.legend.pure.runtime.java.interpreted.natives.essentials.tests.LoadPCTManifest;
 import org.finos.legend.pure.runtime.java.interpreted.natives.grammar._boolean.equality.Eq;
 import org.finos.legend.pure.runtime.java.interpreted.natives.grammar._boolean.equality.Equal;
 import org.finos.legend.pure.runtime.java.interpreted.natives.grammar._boolean.equality.Is;
@@ -352,10 +358,10 @@ public class FunctionExecutionInterpreted implements FunctionExecution
         this.nativeFunctions.put("times_Number_MANY__Number_1_", times);
 
         // Multiplicity
-        this.nativeFunctions.put("toOne_T_MANY__T_1_", new ToOne(repository));
-        this.nativeFunctions.put("toOne_T_MANY__String_1__T_1_", new ToOne(repository));
-        this.nativeFunctions.put("toOneMany_T_MANY__T_$1_MANY$_", new ToOneMany(repository));
-        this.nativeFunctions.put("toOneMany_T_MANY__String_1__T_$1_MANY$_", new ToOneMany(repository));
+        this.nativeFunctions.put("toOne_T_MANY__T_1_", new ToOne(this, repository));
+        this.nativeFunctions.put("toOne_T_MANY__String_1__T_1_", new ToOne(this, repository));
+        this.nativeFunctions.put("toOneMany_T_MANY__T_$1_MANY$_", new ToOneMany(this, repository));
+        this.nativeFunctions.put("toOneMany_T_MANY__String_1__T_$1_MANY$_", new ToOneMany(this, repository));
 
         // String
         this.nativeFunctions.put("joinStrings_String_MANY__String_1__String_1__String_1__String_1_", new JoinStrings(repository));
@@ -546,8 +552,9 @@ public class FunctionExecutionInterpreted implements FunctionExecution
         this.nativeFunctions.put("endsWith_String_1__String_1__Boolean_1_", new EndsWith(this, repository));
         this.nativeFunctions.put("startsWith_String_1__String_1__Boolean_1_", new StartsWith(repository));
         //  Index
-        this.nativeFunctions.put("indexOf_String_1__String_1__Integer_1_", new IndexOfString(this, repository));
-        this.nativeFunctions.put("indexOf_String_1__String_1__Integer_1__Integer_1_", new IndexOfString(this, repository));
+        this.nativeFunctions.put("indexOf_String_1__String_1__Integer_1_", new IndexOfString(repository));
+        this.nativeFunctions.put("indexOf_String_1__String_1__Integer_1__Integer_1_", new IndexOfString(repository));
+        this.nativeFunctions.put("lastIndexOf_String_1__String_1__Integer_1__Integer_1_", new LastIndexOf(repository));
         this.nativeFunctions.put("length_String_1__Integer_1_", new Length(repository));
         //  Operation
         this.nativeFunctions.put("toLower_String_1__String_1_", new ToLower(this, repository));
@@ -576,7 +583,10 @@ public class FunctionExecutionInterpreted implements FunctionExecution
 
         // Tests
         this.nativeFunctions.put("assert_Boolean_1__Function_1__Boolean_1_", new Assert(this));
-        this.nativeFunctions.put("assertError_Function_1__String_1__Integer_$0_1$__Integer_$0_1$__Boolean_1_", new AssertError(this, repository));
+        this.nativeFunctions.put("assertError_Function_1__Function_1__Boolean_1_", new AssertError(this, repository));
+        this.nativeFunctions.put("executeTest_Function_1__TestResult_1_", new ExecuteTest(this, repository));
+        this.nativeFunctions.put("executePCTTest_Function_1__Function_1__Map_1__TestResult_1_", new ExecutePCTTest(this, repository));
+        this.nativeFunctions.put("loadPCTManifest_String_1__PCTManifest_1_", new LoadPCTManifest(this, repository));
     }
 
     public RepositoryCodeStorage getStorage()
@@ -765,7 +775,7 @@ public class FunctionExecutionInterpreted implements FunctionExecution
 
             // Execute
             CoreInstance result = null;
-            if (Instance.instanceOf(function, M3Paths.NativeFunction, processorSupport))
+            if (Function.isNativeFunction(function, processorSupport))
             {
                 org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.function.NativeFunction<?> function1 = NativeFunctionCoreInstanceWrapper.toNativeFunction(function);
                 NativeFunction nativeFunction = this.nativeFunctions.get(function1.getName());
@@ -779,7 +789,7 @@ public class FunctionExecutionInterpreted implements FunctionExecution
             {
                 result = this.executeProperty(PropertyCoreInstanceWrapper.toProperty(function), true, resolvedTypeParameters, resolvedMultiplicityParameters, varContext, profiler, params, functionExpressionCallStack, instantiationContext, executionSupport);
             }
-            else if (Instance.instanceOf(function, M3Paths.FunctionDefinition, processorSupport))
+            else if (Function.isFunctionDefinition(function, processorSupport))
             {
                 function = resolveFunctionDefinition(function, params);
 
@@ -803,9 +813,11 @@ public class FunctionExecutionInterpreted implements FunctionExecution
                 throw new PureExecutionException("Unsupported function for execution " + function.getName() + " of type " + PackageableElement.getUserPathForPackageableElement(function.getClassifier()) + " (class " + function.getClass().getName() + ")", functionExpressionCallStack);
             }
 
-            if (function instanceof PackageableFunction)
+            if (Function.isPackageableFunction(function, processorSupport))
             {
-                if (((PackageableFunction<?>) function)._postConstraints().notEmpty())
+                PackageableFunction<?> packageableFunction = PackageableFunctionCoreInstanceWrapper.toPackageableFunction(function);
+                RichIterable<? extends Constraint> postConstraints = packageableFunction._postConstraints();
+                if (postConstraints.notEmpty())
                 {
                     try
                     {
@@ -815,11 +827,10 @@ public class FunctionExecutionInterpreted implements FunctionExecution
                     {
                         throw new PureExecutionException(functionExpressionCallStack.peek().getSourceInformation(), e.getMessage(), e, functionExpressionCallStack);
                     }
-                    for (CoreInstance constraint : ((PackageableFunction<?>) function)._postConstraints())
+                    for (Constraint constraint : postConstraints)
                     {
-
-                        CoreInstance definition = Instance.getValueForMetaPropertyToOneResolved(Instance.getValueForMetaPropertyToOneResolved(constraint, M3Properties.functionDefinition, processorSupport), M3Properties.expressionSequence, processorSupport);
-                        String ruleId = Instance.getValueForMetaPropertyToOneResolved(constraint, M3Properties.name, processorSupport).getName();
+                        org.finos.legend.pure.m3.coreinstance.meta.pure.metamodel.valuespecification.ValueSpecification definition = constraint._functionDefinition()._expressionSequence().getOnly();
+                        String ruleId = constraint._name();
                         CoreInstance evaluatedConstraint = this.executeValueSpecification(definition, new Stack<>(), new Stack<>(), Stacks.mutable.empty(), variableContext, VoidProfiler.VOID_PROFILER, instantiationContext, executionSupport);
 
                         if (!PrimitiveUtilities.getBooleanValue(evaluatedConstraint.getValueForMetaPropertyToOne(M3Properties.values)))
@@ -971,7 +982,7 @@ public class FunctionExecutionInterpreted implements FunctionExecution
         boolean executable = ValueSpecification.isExecutable(source, processorSupport);
         CoreInstance multiplicity = property._multiplicity();
 
-        CoreInstance evaluatedSource = Instance.getValueForMetaPropertyToOneResolved(executable ? findValueSpecificationExecutor(source, Stacks.mutable.with((CoreInstance) property), processorSupport, this).execute(source, resolvedTypeParameters, resolvedMultiplicityParameters, Stacks.mutable.with(property), variableContext, profiler, instantiationContext, executionSupport, this, processorSupport) : source, M3Properties.values, processorSupport);
+        CoreInstance evaluatedSource = Instance.getValueForMetaPropertyToOneResolved(executable ? findValueSpecificationExecutor(source, Stacks.mutable.with(property), processorSupport, this).execute(source, resolvedTypeParameters, resolvedMultiplicityParameters, Stacks.mutable.with(property), variableContext, profiler, instantiationContext, executionSupport, this, processorSupport) : source, M3Properties.values, processorSupport);
 
         if (evaluatedSource == null)
         {
@@ -981,7 +992,7 @@ public class FunctionExecutionInterpreted implements FunctionExecution
         if (Multiplicity.isToOne(multiplicity, false))
         {
             CoreInstance funcToOne = overrides != null ? Instance.getValueForMetaPropertyToOneResolved(overrides, M3Properties.getterOverrideToOne, processorSupport) : null;
-            if (route && funcToOne != null && !M3Properties.elementOverride.equals(property._name()) && !M3Properties.hiddenPayload.equals(property._name()) && !Instance.instanceOf(Instance.getValueForMetaPropertyToOneResolved(property._classifierGenericType().getValueForMetaPropertyToMany(M3Properties.typeArguments).get(1), M3Properties.rawType, processorSupport), M3Paths.DataType, processorSupport))
+            if (route && funcToOne != null && !M3Properties.elementOverride.equals(property._name()) && !M3Properties.hiddenPayload.equals(property._name()) && !Type.isDataType(Instance.getValueForMetaPropertyToOneResolved(property._classifierGenericType().getValueForMetaPropertyToMany(M3Properties.typeArguments).get(1), M3Properties.rawType, processorSupport), processorSupport))
             {
                 return this.executeFunction(true, FunctionCoreInstanceWrapper.toFunction(funcToOne), Lists.mutable.with(ValueSpecificationBootstrap.wrapValueSpecification(evaluatedSource, executable, processorSupport), ValueSpecificationBootstrap.wrapValueSpecification(property, executable, processorSupport)), resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
             }
@@ -994,7 +1005,7 @@ public class FunctionExecutionInterpreted implements FunctionExecution
         else
         {
             CoreInstance funcToMany = overrides != null ? Instance.getValueForMetaPropertyToOneResolved(overrides, M3Properties.getterOverrideToMany, processorSupport) : null;
-            if (route && funcToMany != null && !M3Properties.hiddenPayload.equals(property._name()) && !Instance.instanceOf(Instance.getValueForMetaPropertyToOneResolved(property._classifierGenericType().getValueForMetaPropertyToMany(M3Properties.typeArguments).get(1), M3Properties.rawType, processorSupport), M3Paths.DataType, processorSupport))
+            if (route && funcToMany != null && !M3Properties.hiddenPayload.equals(property._name()) && !Type.isDataType(Instance.getValueForMetaPropertyToOneResolved(property._classifierGenericType().getValueForMetaPropertyToMany(M3Properties.typeArguments).get(1), M3Properties.rawType, processorSupport), processorSupport))
             {
                 return this.executeFunction(true, FunctionCoreInstanceWrapper.toFunction(funcToMany), Lists.mutable.with(ValueSpecificationBootstrap.wrapValueSpecification(evaluatedSource, executable, processorSupport), ValueSpecificationBootstrap.wrapValueSpecification(property, executable, processorSupport)), resolvedTypeParameters, resolvedMultiplicityParameters, variableContext, functionExpressionCallStack, profiler, instantiationContext, executionSupport);
             }
@@ -1016,31 +1027,31 @@ public class FunctionExecutionInterpreted implements FunctionExecution
 
     public static Executor findValueSpecificationExecutor(CoreInstance instance, MutableStack<CoreInstance> functionExpressionCallStack, ProcessorSupport processorSupport, FunctionExecutionInterpreted functionExecutionInterpreted) throws PureExecutionException
     {
-        if (!ValueSpecification.isExecutable(instance, processorSupport))
-        {
-            return NonExecutableValueSpecificationExecutor.INSTANCE;
-        }
         if (functionExecutionInterpreted.cancelExecution.compareAndSet(true, false))
         {
             throw new PureExecutionException("Execution cancelled!", functionExpressionCallStack);
         }
-        if (Instance.instanceOf(instance, M3Paths.FunctionExpression, processorSupport))
+        if (NonExecutableValueSpecificationExecutor.INSTANCE.canExecute(instance, processorSupport))
+        {
+            return NonExecutableValueSpecificationExecutor.INSTANCE;
+        }
+        if (FunctionExpressionExecutor.INSTANCE.canExecute(instance, processorSupport))
         {
             return FunctionExpressionExecutor.INSTANCE;
         }
-        if (Instance.instanceOf(instance, M3Paths.VariableExpression, processorSupport))
+        if (VariableExpressionExecutor.INSTANCE.canExecute(instance, processorSupport))
         {
             return VariableExpressionExecutor.INSTANCE;
         }
-        if (Instance.instanceOf(instance, M3Paths.InstanceValue, processorSupport))
+        if (InstanceValueExecutor.INSTANCE.canExecute(instance, processorSupport))
         {
             return InstanceValueExecutor.INSTANCE;
         }
-        if (Instance.instanceOf(instance, M3Paths.ClusteredValueSpecification, processorSupport))
+        if (ClusteredValueSpecificationExecutor.INSTANCE.canExecute(instance, processorSupport))
         {
             return ClusteredValueSpecificationExecutor.INSTANCE;
         }
-        if (Instance.instanceOf(instance, M3Paths.RoutedValueSpecification, processorSupport))
+        if (RoutedValueSpecificationExecutor.INSTANCE.canExecute(instance, processorSupport))
         {
             return RoutedValueSpecificationExecutor.INSTANCE;
         }

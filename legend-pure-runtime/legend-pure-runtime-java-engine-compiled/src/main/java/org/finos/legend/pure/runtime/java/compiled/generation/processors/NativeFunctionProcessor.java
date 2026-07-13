@@ -138,6 +138,7 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string._boolean.Contains;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string._boolean.EndsWith;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.index.IndexOfWithFrom;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.index.LastIndexOf;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.operation.ReverseString;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.operation.ToLower;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.operation.ToUpper;
@@ -160,6 +161,9 @@ import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.trim.Trim;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.tests.Assert;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.tests.AssertError;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.tests.ExecuteTest;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.tests.ExecutePCTTest;
+import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.tests.LoadPCTManifest;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.grammar._boolean.operation.And;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.grammar._boolean.operation.Not;
 import org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.grammar._boolean.operation.Or;
@@ -517,6 +521,7 @@ public class NativeFunctionProcessor
         //  Index
         registerNative(map, new org.finos.legend.pure.runtime.java.compiled.generation.processors.natives.essentials.string.index.IndexOf());
         registerNative(map, new IndexOfWithFrom());
+        registerNative(map, new LastIndexOf());
         registerNative(map, new Length());
         //  Operation
         registerNative(map, new Replace());
@@ -545,5 +550,8 @@ public class NativeFunctionProcessor
         //Tests
         registerNative(map, new Assert());
         registerNative(map, new AssertError());
+        registerNative(map, new ExecuteTest());
+        registerNative(map, new ExecutePCTTest());
+        registerNative(map, new LoadPCTManifest());
     }
 }

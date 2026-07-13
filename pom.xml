@@ -26,7 +26,7 @@
     <name>Legend Pure</name>
     <groupId>org.finos.legend.pure</groupId>
     <artifactId>legend-pure</artifactId>
-    <version>5.79.1-SNAPSHOT</version>
+    <version>5.88.2-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <modules>
@@ -35,6 +35,7 @@
         <module>legend-pure-maven</module>
         <module>legend-pure-runtime</module>
         <module>legend-pure-store</module>
+        <module>legend-pure-docs</module>
     </modules>
 
     <properties>
@@ -53,7 +54,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
         <maven.compiler.release>8</maven.compiler.release>
-        <java.version.range>[11,12),[17,18)</java.version.range>
+        <java.version.range>[11,12),[17,18),[21,22),[25,26)</java.version.range>
         <publish.server.id>central</publish.server.id>
 
         <!-- Dependency version -->
@@ -69,6 +70,7 @@
         <deephaven-csv.version>0.18.0</deephaven-csv.version>
         <eclipsecollections.version>10.2.0</eclipsecollections.version>
         <guava.version>33.4.6-jre</guava.version>
+        <vavr.version>1.0.1</vavr.version>
         <h2.version>2.1.214</h2.version>
         <duckdb.version>1.0.0</duckdb.version>
         <jackson.version>2.10.5</jackson.version>
@@ -598,6 +600,14 @@
 
             <dependency>
                 <groupId>org.finos.legend.pure</groupId>
+                <artifactId>legend-pure-maven-shared</artifactId>
+                <type>test-jar</type>
+                <version>${project.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.finos.legend.pure</groupId>
                 <artifactId>legend-pure-runtime-java-engine-compiled</artifactId>
                 <version>${project.version}</version>
             </dependency>
@@ -656,6 +666,11 @@
                 <groupId>com.google.guava</groupId>
                 <artifactId>guava</artifactId>
                 <version>${guava.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.vavr</groupId>
+                <artifactId>vavr</artifactId>
+                <version>${vavr.version}</version>
             </dependency>
 
             <dependency>

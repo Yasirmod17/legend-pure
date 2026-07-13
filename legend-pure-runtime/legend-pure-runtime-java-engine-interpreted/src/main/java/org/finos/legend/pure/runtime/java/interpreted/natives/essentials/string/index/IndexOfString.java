@@ -27,7 +27,6 @@ import org.finos.legend.pure.m3.navigation.ValueSpecificationBootstrap;
 import org.finos.legend.pure.m4.ModelRepository;
 import org.finos.legend.pure.m4.coreinstance.CoreInstance;
 import org.finos.legend.pure.runtime.java.interpreted.ExecutionSupport;
-import org.finos.legend.pure.runtime.java.interpreted.FunctionExecutionInterpreted;
 import org.finos.legend.pure.runtime.java.interpreted.VariableContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.InstantiationContext;
 import org.finos.legend.pure.runtime.java.interpreted.natives.NativeFunction;
@@ -39,7 +38,7 @@ public class IndexOfString extends NativeFunction
 {
     private final ModelRepository repository;
 
-    public IndexOfString(FunctionExecutionInterpreted functionExecution, ModelRepository repository)
+    public IndexOfString(ModelRepository repository)
     {
         this.repository = repository;
     }
